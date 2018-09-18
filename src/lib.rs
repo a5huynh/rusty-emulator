@@ -1,10 +1,21 @@
 extern crate cfg_if;
 extern crate wasm_bindgen;
+extern crate js_sys;
 
 mod utils;
 
 use std::fmt;
 use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+extern {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(msg: &str);
+}
+
+macro_rules! log {
+    ($($t:tt)*) => (log(&format!($($t)*)))
+}
 
 #[wasm_bindgen]
 // Important to have this so that each cell is represented as a single
@@ -50,11 +61,16 @@ impl Universe {
     }
 
     pub fn new() -> Universe {
+        utils::set_panic_hook();
+
         let width = 64;
         let height = 64;
 
-        let cells = (0..width * height).map(|i| {
-            if i % 2 == 0 || i % 7 == 0 {
+        log!("Universe created with w: {}, h: {}", width, height);
+
+        // Generate a random universe.
+        let cells = (0..width * height).map(|_i| {
+            if js_sys::Math::random() < 0.5 {
                 Cell::ALIVE
             } else {
                 Cell::DEAD
