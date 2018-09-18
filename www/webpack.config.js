@@ -1,14 +1,41 @@
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const path = require('path');
+const Path = require('path');
+const Webpack = require('webpack');
 
 module.exports = {
-  entry: "./bootstrap.js",
-  output: {
-    path: path.resolve(__dirname, "dist"),
-    filename: "bootstrap.js",
+  devServer: {
+    contentBase: Path.join(__dirname, 'dist'),
+    hot: true,
+    progress: true,
+    port: 9000
   },
-  mode: "development",
+  devtool: "source-map",
+  entry: {
+    bootstrap: "./src/bootstrap.js",
+  },
+  output: {
+    path: Path.resolve(__dirname, "dist"),
+    chunkFilename: '[name].chunk.js',
+    filename: "[name].js",
+  },
+  resolve: {
+    extensions: [".ts", ".tsx", ".js", ".json", ".wasm"]
+  },
+  module: {
+    rules: [
+      { test: /\.wasm$/, type: "webassembly/experimental" },
+      // All files with a '.ts' or '.tsx' extension will be handled
+      // by 'awesome-typescript-loader'.
+      { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
+      // All output '.js' files will have any sourcemaps re-processed
+      // by 'source-map-loader'.
+      { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
+    ]
+  },
   plugins: [
-    new CopyWebpackPlugin(['index.html'])
+    new CleanWebpackPlugin(['dist']),
+    new CopyWebpackPlugin(['src/index.html']),
+    new Webpack.HotModuleReplacementPlugin(),
   ],
 };

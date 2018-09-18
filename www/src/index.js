@@ -1,5 +1,5 @@
 import { Universe, Cell } from "z80-emulator";
-import { memory } from 'z80-emulator/z80_emulator_bg';
+import { memory } from "z80-emulator/z80_emulator_bg";
 
 const CELL_SIZE = 5; // px
 const GRID_COLOR = '#CCCCCC';
