@@ -10,15 +10,16 @@ interface WasmMemory {
 }
 
 export default class Renderer {
-    public animationId:number;
+    public animationId: number;
 
-    canvas:HTMLCanvasElement;
-    ctx:CanvasRenderingContext2D;
-    universe:Universe;
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+
+    universe: Universe;
     memory: WasmMemory;
 
-    width:number;
-    height: number
+    width: number;
+    height: number;
 
     constructor(memory: WasmMemory) {
         this.canvas = <HTMLCanvasElement>document.getElementById('game-of-life-canvas');
@@ -34,9 +35,30 @@ export default class Renderer {
         this.canvas.height = (CELL_SIZE + 1) * this.height + 1;
         this.canvas.width = (CELL_SIZE + 1) * this.width + 1;
 
+        this.handleCanvasClick = this.handleCanvasClick.bind(this);
         this.drawCells = this.drawCells.bind(this);
         this.drawGrid = this.drawGrid.bind(this);
         this.render = this.render.bind(this);
+
+        // Register on click events.
+        this.canvas.addEventListener('click', this.handleCanvasClick);
+    }
+
+    private handleCanvasClick(event: MouseEvent) {
+        let boundingRect = this.canvas.getBoundingClientRect();
+        let scaleX = this.canvas.width / boundingRect.width;
+        let scaleY = this.canvas.height / boundingRect.height;
+
+        let canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+        let canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+        let row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), this.height - 1);
+        let col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), this.width - 1);
+
+        this.universe.toggle_cell(row, col);
+
+        this.drawCells();
+        this.drawGrid();
     }
 
     private getIndex(row: number, col: number) {
