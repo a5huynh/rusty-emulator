@@ -1,3 +1,4 @@
+extern crate wasm_bindgen;
 use cfg_if::cfg_if;
 
 cfg_if! {
@@ -20,4 +21,9 @@ cfg_if! {
         #[global_allocator]
         static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
     }
+}
+
+#[macro_export]
+macro_rules! log {
+    ($($t:tt)*) => (log(&format!($($t)*)))
 }
