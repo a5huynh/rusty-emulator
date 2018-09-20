@@ -3,6 +3,7 @@ extern crate wasm_bindgen;
 
 use wasm_bindgen::prelude::*;
 
+pub mod chip8;
 pub mod gol;
 mod utils;
 
