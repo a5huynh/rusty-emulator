@@ -78,9 +78,18 @@ impl CHIP8 {
     pub fn num_registers() -> usize { NUM_REGISTERS }
     pub fn stack_size() -> usize { STACK_SIZE }
 
-    // Retrieves the current opcode pointed to by the program counter
-    fn get_opcode(&self) -> u8 {
-        self.memory[self.pc as usize]
+    // Retrieves the current opcode pointed to by the program counter.
+    // All instrs are 2 bytes long and are stored most-sig byte first.
+    fn fetch(&mut self) -> u16 {
+        // Shift first byte to upper 8 bits and OR second byte into lower 8 bits
+        let opcode = u16::from(self.memory[self.pc as usize]) << 8 | u16::from(self.memory[(self.pc + 1) as usize]);
+        // Increment program counter
+        self.pc += 2;
+        return opcode;
+    }
+
+    // Executes an opcode.
+    fn execute(&mut self, opcode: u16) {
     }
 
     // Retrieves a pointer to the display memory.
@@ -122,11 +131,10 @@ impl CHIP8 {
     }
 
     pub fn tick(&mut self) {
-        // Parse opcode
-        let _opcode = self.get_opcode();
-        // Apply opcode
-        // Increment program counter
-        self.pc += 1;
+        // Fetch opcode
+        let opcode = self.fetch();
+        // Execute opcode
+        self.execute(opcode);
     }
 }
 
@@ -141,18 +149,21 @@ mod tests {
     }
 
     #[test]
-    fn test_get_opcode() {
-        let emu = CHIP8::new();
-        let opcode = emu.get_opcode();
-        assert_eq!(opcode, 0);
+    fn test_fetch() {
+        let mut emu = CHIP8::new();
+        // Seed memory at PC with a fake opcode.
+        emu.memory[0x200] = 0xAB;
+        emu.memory[0x201] = 0xCD;
+        // Op-code should be read with most-sig byte first.
+        let opcode = emu.fetch();
+        assert_eq!(opcode, 0xABCD);
     }
 
     #[test]
     fn test_load_rom() {
-        let rom = [1; 8];
         let mut emu = CHIP8::new();
         // Test the number of bytes written.
-        let bytes_written = emu.load_rom(Some(Box::new(rom)));
+        let bytes_written = emu.load_rom(Some(Box::new([1; 8])));
         assert_eq!(bytes_written, 8);
         // Test that the rom was written in the right place.
         let start = 0x200;
