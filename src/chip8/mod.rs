@@ -90,6 +90,36 @@ impl CHIP8 {
 
     // Executes an opcode.
     fn execute(&mut self, opcode: u16) {
+        let instr = opcode & 0xF000;
+        let subinstr  = opcode & 0x000F;
+        let addr  = opcode & 0x0FFF;
+        let lower = (opcode & 0x00FF) as u8;
+        // Register positions
+        let vx = ((opcode & 0x0F00) >> 8) as usize;
+        let vy = ((opcode & 0x00F0) >> 4) as usize;
+
+        match instr {
+            0x0000 => {
+                match lower {
+                    // Clear display.
+                    0xE0 => {
+                        for idx in 0..MEM_SIZE {
+                            self.display[idx] = 0;
+                        }
+                    },
+                    // Return from subroutine.
+                    0xEE => {
+                        // Sets the program counter to the address at the top
+                        // of the stack.
+                        self.pc = self.stack[self.sp as usize];
+                        // Subtract 1 from the stack pointer.
+                        self.sp -= 1;
+                    },
+                    _ => println!("Unknown opcode {:#X}", opcode)
+                }
+            },
+            _ => println!("Unknown opcode {:#X}", opcode)
+        }
     }
 
     // Retrieves a pointer to the display memory.
@@ -170,5 +200,13 @@ mod tests {
         for idx in 0..8 {
             assert_eq!(emu.memory[start + idx], 1);
         }
+    }
+
+    #[test]
+    fn test_execute_0x1000() {
+        let mut emu = CHIP8::new();
+        // Test basic jump
+        emu.execute(0x1FED);
+        assert_eq!(emu.pc, 0x0FED);
     }
 }
