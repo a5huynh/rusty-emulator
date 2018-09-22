@@ -118,6 +118,44 @@ impl CHIP8 {
                     _ => println!("Unknown opcode {:#X}", opcode)
                 }
             },
+            // JP <addr>: Jump to <addr>
+            0x1000 => self.pc = addr as u16,
+            // CALL <addr>: call subroutine at <addr>
+            0x2000 => {
+                // Increments the stack pointer and adds the current program counter
+                // to the top of the stack.
+                self.sp += 1;
+                self.stack[self.sp as usize] = self.pc;
+                // Program counter set to <addr>.
+                self.pc = addr as u16;
+            },
+            // SE vx, byte
+            // Skips next instruction if Vx = lower byte.
+            0x3000 => {
+                if self.registers[vx] == lower {
+                    self.pc += 2;
+                }
+            },
+            // SNE vx, byte
+            // Skips next instruction if vx != lower byte.
+            0x4000 => {
+                if self.registers[vx] != lower {
+                    self.pc += 2;
+                }
+            },
+            // SE vx, vy
+            // Skip next instruction if vx == vy
+            0x5000 => {
+                if self.registers[vx] == self.registers[vy] {
+                    self.pc += 2
+                }
+            },
+            // LD vx, byte (vx = byte)
+            // Puts the value of the lower byte into the register vx.
+            0x6000 => self.registers[vx] = lower,
+            // ADD vx, byte (vx = vx + byte)
+            // Adds the value of lower to the value in vx, storing the result in vx.
+            0x7000 => self.registers[vx] += lower,
             _ => println!("Unknown opcode {:#X}", opcode)
         }
     }
@@ -208,5 +246,76 @@ mod tests {
         // Test basic jump
         emu.execute(0x1FED);
         assert_eq!(emu.pc, 0x0FED);
+    }
+
+    #[test]
+    fn test_execute_0x2000() {
+        let mut emu = CHIP8::new();
+        // Test function call
+        emu.pc = 0xDEAD;
+        emu.execute(0x2FED);
+        assert_eq!(emu.pc, 0x0FED);
+        assert_eq!(emu.stack[emu.sp as usize], 0xDEAD);
+    }
+
+    #[test]
+    fn test_execute_0x3000() {
+        let mut emu = CHIP8::new();
+        // Test skip instruction
+        emu.pc = 0;
+        emu.registers[0] = 0xAD;
+        emu.execute(0x30AD);
+        assert_eq!(emu.pc, 2);
+
+        emu.pc = 0;
+        emu.registers[0] = 0;
+        emu.execute(0x30AD);
+        assert_eq!(emu.pc, 0);
+    }
+
+    #[test]
+    fn test_execute_0x4000() {
+        let mut emu = CHIP8::new();
+        // Test ne skip instruction
+        emu.pc = 0;
+        emu.registers[0] = 0xAD;
+        emu.execute(0x40AD);
+        assert_eq!(emu.pc, 0);
+
+        emu.pc = 0;
+        emu.registers[0] = 0;
+        emu.execute(0x40AD);
+        assert_eq!(emu.pc, 2);
+    }
+
+    #[test]
+    fn test_execute_0x5000() {
+        let mut emu = CHIP8::new();
+        emu.pc = 0;
+        emu.registers[0x0] = 0xAB;
+        emu.registers[0x1] = 0xAB;
+        emu.execute(0x5010);
+        assert_eq!(emu.pc, 2);
+
+        emu.pc = 0;
+        emu.registers[0x0] = 0xAB;
+        emu.registers[0x1] = 0xCD;
+        emu.execute(0x5010);
+        assert_eq!(emu.pc, 0);
+    }
+
+    #[test]
+    fn test_execute_0x6000() {
+        let mut emu = CHIP8::new();
+        emu.execute(0x60AB);
+        assert_eq!(emu.registers[0], 0xAB);
+    }
+
+    #[test]
+    fn test_execute_0x7000() {
+        let mut emu = CHIP8::new();
+        emu.registers[0] = 2;
+        emu.execute(0x7002);
+        assert_eq!(emu.registers[0], 4);
     }
 }
