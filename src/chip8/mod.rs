@@ -156,6 +156,49 @@ impl CHIP8 {
             // ADD vx, byte (vx = vx + byte)
             // Adds the value of lower to the value in vx, storing the result in vx.
             0x7000 => self.registers[vx] += lower,
+            0x8000 => {
+                match subinstr {
+                    // LD vx, vy
+                    0 => self.registers[vx] = self.registers[vy],
+                    // OR vx, vy
+                    1 => self.registers[vx] = self.registers[vx] | self.registers[vy],
+                    // AND vx, vy
+                    2 => self.registers[vx] = self.registers[vx] & self.registers[vy],
+                    // XOR vx, vy
+                    3 => self.registers[vx] = self.registers[vx] ^ self.registers[vy],
+                    // ADD vx, vy
+                    4 => self.registers[vx] = self.registers[vx] + self.registers[vy],
+                    // SUB vx, vy
+                    5 => self.registers[vx] = self.registers[vx] - self.registers[vy],
+                    // SHR vx {, vy} (bit shift right)
+                    // vx = vx shr 1.
+                    // If the least significant bit of vx is 1, then vf is set to 1, otherwise 0.
+                    // Then vx is divided by 2.
+                    6 => {
+                        let lsb = self.registers[vx] & 1;
+                        // Set VF to least-significant bit before shift
+                        self.registers[Register::VF as usize] = lsb;
+                        self.registers[vx] >>= 1;
+                    },
+                    // SUBN vx, vy
+                    // vx = vy - vx, set vf = 1 if vy > vx
+                    7 => {
+                        if self.registers[vy] > self.registers[vx] {
+                            self.registers[Register::VF as usize] = 1;
+                        } else {
+                            self.registers[Register::VF as usize] = 0;
+                        }
+                        self.registers[vx] = self.registers[vy] - self.registers[vx];
+                    },
+                    0xE => {
+                        let msb = (self.registers[vx] & 0b1000_0000) >> 7;
+                        // Set VF to most-significant bit before shift
+                        self.registers[Register::VF as usize] = msb;
+                        self.registers[vx] <<= 1;
+                    },
+                    _ => println!("Unknown opcode {:#X}", opcode),
+                }
+            },
             _ => println!("Unknown opcode {:#X}", opcode)
         }
     }
@@ -317,5 +360,66 @@ mod tests {
         emu.registers[0] = 2;
         emu.execute(0x7002);
         assert_eq!(emu.registers[0], 4);
+    }
+
+    #[test]
+    fn test_execute_0x8000() {
+        let mut emu = CHIP8::new();
+        // LD
+        emu.registers[1] = 0xAD;
+        emu.execute(0x8010);
+        assert_eq!(emu.registers[0], 0xAD);
+        // OR
+        emu.registers[0] = 0xF0;
+        emu.registers[1] = 0x0F;
+        emu.execute(0x8011);
+        assert_eq!(emu.registers[0], 0xFF);
+        // AND
+        emu.registers[0] = 0xF0;
+        emu.registers[1] = 0x0F;
+        emu.execute(0x8012);
+        assert_eq!(emu.registers[0], 0x00);
+        // XOR
+        emu.registers[0] = 0xF0;
+        emu.registers[1] = 0x0F;
+        emu.execute(0x8013);
+        assert_eq!(emu.registers[0], 0xFF);
+        // ADD
+        emu.registers[0] = 0x02;
+        emu.registers[1] = 0x02;
+        emu.execute(0x8014);
+        assert_eq!(emu.registers[0], 4);
+        // SUB
+        emu.registers[0] = 0x02;
+        emu.registers[1] = 0x02;
+        emu.execute(0x8015);
+        assert_eq!(emu.registers[0], 0);
+        // SHR
+        emu.registers[0] = 0x01;
+        emu.execute(0x8006);
+        // Right shifting 1 should result in VF = 1, V1 = 0
+        assert_eq!(emu.registers[Register::VF as usize], 1);
+        assert_eq!(emu.registers[0], 0);
+        // Right shifting 2 should result in VF = 0, V1 = 1
+        emu.registers[0] = 0b0010;
+        emu.execute(0x8006);
+        assert_eq!(emu.registers[Register::VF as usize], 0);
+        assert_eq!(emu.registers[0], 0b0001);
+        // SUBN vx, vy
+        emu.registers[0] = 0x02;
+        emu.registers[1] = 0x04;
+        emu.execute(0x8017);
+        assert_eq!(emu.registers[Register::VF as usize], 1);
+        assert_eq!(emu.registers[0], 2);
+        // SHL vx
+        emu.registers[0] = 0b1000_0000;
+        emu.execute(0x800E);
+        assert_eq!(emu.registers[Register::VF as usize], 1);
+        assert_eq!(emu.registers[0], 0);
+
+        emu.registers[0] = 0b0000_0001;
+        emu.execute(0x800E);
+        assert_eq!(emu.registers[Register::VF as usize], 0);
+        assert_eq!(emu.registers[0], 0b0010);
     }
 }
