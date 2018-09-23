@@ -199,6 +199,18 @@ impl CHIP8 {
                     _ => println!("Unknown opcode {:#X}", opcode),
                 }
             },
+            // SNE vx, vy
+            // Skip next instruction if vx != vy
+            0x9000 => {
+                if self.registers[vx] != self.registers[vy] {
+                    self.pc += 2;
+                }
+            },
+            // LD i, <addr>
+            0xA000 => self.i_reg = addr,
+            // JP V0, <addr>
+            // Jump to location v0 + <addr>
+            0xB000 => self.pc = self.registers[Register::V0 as usize] as u16 + addr,
             _ => println!("Unknown opcode {:#X}", opcode)
         }
     }
@@ -421,5 +433,30 @@ mod tests {
         emu.execute(0x800E);
         assert_eq!(emu.registers[Register::VF as usize], 0);
         assert_eq!(emu.registers[0], 0b0010);
+    }
+
+    #[test]
+    fn test_execute_0x9000() {
+        let mut emu = CHIP8::new();
+        emu.pc = 0;
+        emu.registers[0] = 0xAB;
+        emu.registers[1] = 0xCD;
+        emu.execute(0x9010);
+        assert_eq!(emu.pc, 2);
+    }
+
+    #[test]
+    fn test_execute_0xa000() {
+        let mut emu = CHIP8::new();
+        emu.execute(0xABCD);
+        assert_eq!(emu.i_reg, 0xBCD);
+    }
+
+    #[test]
+    fn test_execute_0xb000() {
+        let mut emu = CHIP8::new();
+        emu.registers[0] = 0xF;
+        emu.execute(0xBCD0);
+        assert_eq!(emu.pc, 0xCDF);
     }
 }
