@@ -4,7 +4,8 @@
 // have some interesting/neat implementation details.
 //
 // Check out the `research` section of the README to learn more.
-
+use js_sys::{ Math };
+use rand::{ thread_rng, Rng };
 use wasm_bindgen::prelude::*;
 use utils;
 
@@ -14,6 +15,18 @@ const MEM_SIZE: usize = 4000;
 const STACK_SIZE: usize = 16;
 const DISPLAY_WIDTH: usize = 64;
 const DISPLAY_HEIGHT: usize = 32;
+
+#[cfg(target_arch = "wasm32")]
+fn random_byte() -> u8 {
+    (Math::random() * 255.0) as u8
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn random_byte() -> u8 {
+    // thread_rng is often the most convenient source of randomness:
+    let mut rng = thread_rng();
+    (rng.gen::<f32>() * 255.0) as u8
+}
 
 // Mapping of register names to the register bank
 #[wasm_bindgen]
@@ -211,6 +224,13 @@ impl CHIP8 {
             // JP V0, <addr>
             // Jump to location v0 + <addr>
             0xB000 => self.pc = self.registers[Register::V0 as usize] as u16 + addr,
+            // RND vx, byte
+            // vx = random byte AND kk
+            // Generates a random number from 0 to 255 which is then ANDed with the
+            // lower byte and stored in VX.
+            0xC000 => {
+                self.registers[vx] = random_byte() & lower;
+            },
             _ => println!("Unknown opcode {:#X}", opcode)
         }
     }
@@ -458,5 +478,12 @@ mod tests {
         emu.registers[0] = 0xF;
         emu.execute(0xBCD0);
         assert_eq!(emu.pc, 0xCDF);
+    }
+
+    #[test]
+    fn test_execute_0xc000() {
+        let mut emu = CHIP8::new();
+        emu.execute(0xC0AD);
+        assert_ne!(emu.registers[0], 0);
     }
 }
