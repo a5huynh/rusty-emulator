@@ -1,5 +1,12 @@
 extern crate wasm_bindgen;
 use cfg_if::cfg_if;
+use wasm_bindgen::prelude::{ wasm_bindgen };
+
+#[wasm_bindgen]
+extern {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(msg: &str);
+}
 
 cfg_if! {
     // When the `console_error_panic_hook` feature is enabled, we can call the

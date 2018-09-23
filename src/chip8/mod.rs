@@ -174,15 +174,15 @@ impl CHIP8 {
                     // LD vx, vy
                     0 => self.registers[vx] = self.registers[vy],
                     // OR vx, vy
-                    1 => self.registers[vx] = self.registers[vx] | self.registers[vy],
+                    1 => self.registers[vx] |= self.registers[vy],
                     // AND vx, vy
-                    2 => self.registers[vx] = self.registers[vx] & self.registers[vy],
+                    2 => self.registers[vx] &= self.registers[vy],
                     // XOR vx, vy
-                    3 => self.registers[vx] = self.registers[vx] ^ self.registers[vy],
+                    3 => self.registers[vx] ^= self.registers[vy],
                     // ADD vx, vy
-                    4 => self.registers[vx] = self.registers[vx] + self.registers[vy],
+                    4 => self.registers[vx] += self.registers[vy],
                     // SUB vx, vy
-                    5 => self.registers[vx] = self.registers[vx] - self.registers[vy],
+                    5 => self.registers[vx] -= self.registers[vy],
                     // SHR vx {, vy} (bit shift right)
                     // vx = vx shr 1.
                     // If the least significant bit of vx is 1, then vf is set to 1, otherwise 0.
@@ -223,7 +223,7 @@ impl CHIP8 {
             0xA000 => self.i_reg = addr,
             // JP V0, <addr>
             // Jump to location v0 + <addr>
-            0xB000 => self.pc = self.registers[Register::V0 as usize] as u16 + addr,
+            0xB000 => self.pc = u16::from(self.registers[Register::V0 as usize]) + addr,
             // RND vx, byte
             // vx = random byte AND kk
             // Generates a random number from 0 to 255 which is then ANDed with the
