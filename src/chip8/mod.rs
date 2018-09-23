@@ -231,6 +231,51 @@ impl CHIP8 {
             0xC000 => {
                 self.registers[vx] = random_byte() & lower;
             },
+            // DRW vx, vy, nibble
+            // Display n-byte sprite starting at memory location I at (vx, vy) and set
+            // VF = collision.
+            // A collision occurs if during sprite xor-ing any pixels are erased.
+            // The sprite should wrap the screen if vx/vy is greater than the
+            // display width/height.
+            0xD000 => {
+                self.registers[Register::VF as usize] = 0;
+                // Starting point for the sprite.
+                let mut px = self.registers[vx] as usize;
+                let mut py = self.registers[vy] as usize;
+                // Loop each row of the sprite.
+                for idx in 0..subinstr {
+                    let byte = self.memory[(self.i_reg + idx) as usize];
+                    // Loop through each bit.
+                    for bit_idx in 0..8 {
+                        let value = (byte & (0b1000_0000 >> bit_idx)) >> (7 - bit_idx);
+                        // Handle horizontal wrapping.
+                        let mut wx = px;
+                        if px > DISPLAY_WIDTH {
+                            wx = DISPLAY_WIDTH - px;
+                        }
+
+                        // Handle vertical wrapping.
+                        let mut wy = py;
+                        if py > DISPLAY_HEIGHT {
+                            wx = DISPLAY_HEIGHT - py;
+                        }
+
+                        let display_idx = wy * DISPLAY_WIDTH + wx;
+
+                        // Set VF register if we erase a pixel.
+                        if self.registers[Register::VF as usize] == 0
+                            && value == 0
+                            && self.display[display_idx] == 1 {
+                            self.registers[Register::VF as usize] = 1;
+                        }
+
+                        self.display[display_idx] = value;
+                        px += 1;
+                    }
+                    px = self.registers[vx] as usize;
+                    py += 1;
+                }
+            },
             _ => println!("Unknown opcode {:#X}", opcode)
         }
     }
@@ -485,5 +530,28 @@ mod tests {
         let mut emu = CHIP8::new();
         emu.execute(0xC0AD);
         assert_ne!(emu.registers[0], 0);
+    }
+
+    #[test]
+    fn test_execute_0xd000() {
+        let mut emu = CHIP8::new();
+        // Fake sprite.
+        emu.memory[0] = 0xFF;
+        emu.execute(0xD001);
+        // VF register should be set to 0
+        assert_eq!(emu.registers[Register::VF as usize], 0);
+        // Check that the sprite was written to the display memory
+        for idx in 0..8 {
+            assert_eq!(emu.display[idx], 1);
+        }
+        // Writing to the same location on the display again with an
+        // empty sprite should set the VF register.
+        emu.memory[0] = 0;
+        emu.execute(0xD001);
+        assert_eq!(emu.registers[Register::VF as usize], 1);
+        // Check that the sprite was written to the display memory
+        for idx in 0..8 {
+            assert_eq!(emu.display[idx], 0);
+        }
     }
 }
