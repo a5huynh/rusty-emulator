@@ -5,6 +5,7 @@
 //
 // Check out the `research` section of the README to learn more.
 use js_sys::{ Math };
+use std::fmt;
 use rand::{ thread_rng, Rng };
 use wasm_bindgen::prelude::*;
 use utils;
@@ -250,14 +251,14 @@ impl CHIP8 {
                         let value = (byte & (0b1000_0000 >> bit_idx)) >> (7 - bit_idx);
                         // Handle horizontal wrapping.
                         let mut wx = px;
-                        if px > DISPLAY_WIDTH {
-                            wx = DISPLAY_WIDTH - px;
+                        if px >= DISPLAY_WIDTH {
+                            wx -= DISPLAY_WIDTH;
                         }
 
                         // Handle vertical wrapping.
                         let mut wy = py;
-                        if py > DISPLAY_HEIGHT {
-                            wx = DISPLAY_HEIGHT - py;
+                        if py >= DISPLAY_HEIGHT {
+                            wy -= DISPLAY_HEIGHT;
                         }
 
                         let display_idx = wy * DISPLAY_WIDTH + wx;
@@ -323,6 +324,22 @@ impl CHIP8 {
         let opcode = self.fetch();
         // Execute opcode
         self.execute(opcode);
+    }
+}
+
+impl fmt::Display for CHIP8 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for py in 0..DISPLAY_HEIGHT {
+            for px in 0..DISPLAY_WIDTH {
+                let pixel = self.display[py * DISPLAY_WIDTH + px];
+                let symbol = if pixel == 0 { '◻' } else { '◼' };
+                write!(f, "{}", symbol)?
+            }
+
+            write!(f, "\n")?;
+        }
+
+        Ok(())
     }
 }
 
@@ -552,6 +569,30 @@ mod tests {
         // Check that the sprite was written to the display memory
         for idx in 0..8 {
             assert_eq!(emu.display[idx], 0);
+        }
+
+        // Testing horizontal wrapping
+        emu.memory[0] = 0xFF;
+        emu.memory[1] = 0xFF;
+        emu.registers[0] = (DISPLAY_WIDTH - 1) as u8;
+        emu.registers[1] = 0;
+        emu.execute(0xD011);
+        // Should start on the far right and then wrap over to the left again.
+        assert_eq!(emu.display[DISPLAY_WIDTH - 1], 1);
+        for idx in 0..7 {
+            assert_eq!(emu.display[idx], 1);
+        }
+
+        emu.registers[0] = (DISPLAY_WIDTH - 1) as u8;
+        emu.registers[1] = (DISPLAY_HEIGHT - 1) as u8;
+        emu.execute(0xD012);
+        // Top right & bottom right pixels are set
+        assert_eq!(emu.display[DISPLAY_WIDTH - 1], 1);
+        assert_eq!(emu.display[(DISPLAY_HEIGHT - 1) * DISPLAY_WIDTH + (DISPLAY_WIDTH - 1)], 1);
+        // Top left 7 pixels and bottom left 7 pixels
+        for idx in 0..7 {
+            assert_eq!(emu.display[idx], 1);
+            assert_eq!(emu.display[(DISPLAY_HEIGHT - 1) * DISPLAY_WIDTH + idx], 1);
         }
     }
 }
