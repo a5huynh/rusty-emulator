@@ -39,20 +39,25 @@ export default class Engine {
             this.engine.pc(),
             this.engine.sp()
         );
-        this.render = this.render.bind(this);
+
         this.isPaused = this.isPaused.bind(this);
+        this.render = this.render.bind(this);
+        this.tick = this.tick.bind(this);
     }
 
     public isPaused() {
         return this.animationId === null;
     }
 
-    public render() {
-        // this..tick();
+    public tick() {
+        this.render();
+        this.engine.tick();
+        this.animationId = requestAnimationFrame(this.render);
+    }
 
+    public render() {
         this.display.drawGrid();
         this.display.drawPixels();
         this.memDisplay.drawRegisters();
-        this.animationId = requestAnimationFrame(this.render);
     }
 }

@@ -28,4 +28,5 @@ playPauseButton.addEventListener('click', event => {
   }
 });
 
-play();
+// Render UI but don't start engine yet.
+engine.render();
