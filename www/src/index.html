@@ -15,11 +15,26 @@
         align-items: center;
         justify-content: center;
       }
+
+      code { font-size: 10px; }
+      table td { padding: 0 16px; }
+
     </style>
   </head>
   <body>
-    <button id="play-pause"></button>
-    <canvas id="engine-display"></canvas>
+    <table>
+      <tr>
+        <td><button id="play-pause"></button></td>
+        <td><canvas id="engine-display"></canvas></td>
+        <td><code id="registers"></code></td>
+      </tr>
+      <tr>
+        <td colspan="3" style="text-align: center;">
+          <hr>
+          <code id="memory">Memory only shown on pause.</code>
+        </td>
+      </tr>
+    </table>
     <script src="./bootstrap.js"></script>
   </body>
 </html>

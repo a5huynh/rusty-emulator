@@ -5,13 +5,58 @@ const GRID_COLOR = '#CCCCCC';
 const OFF_COLOR = '#FFFFFF';
 const ON_COLOR = '#000000';
 
+export class MemoryDisplay {
+    memory: WasmMemory;
+    // Pointers to various memory elements.
+    registersPtr: number;
+    memoryPtr: number;
+    stackPtr: number;
+    pcPtr: number;
+    spPtr: number;
+    // Sizes of the register bank, memory bank, and stack.
+    numRegisters: number;
+    memorySize: number;
+    stackSize: number;
 
-export default class Display {
+    constructor(
+        memory: WasmMemory,
+        registersPtr: number, numRegisters: number,
+        memoryPtr: number, memorySize: number,
+        stackPtr: number, stackSize: number,
+        pcPtr: number, spPtr: number
+    ) {
+        this.memory = memory;
+        this.registersPtr = registersPtr;
+        this.numRegisters = numRegisters;
+
+        this.memoryPtr = memoryPtr;
+        this.memorySize = memorySize;
+
+        this.stackPtr = stackPtr;
+        this.stackSize = stackSize;
+
+        this.pcPtr = pcPtr;
+        this.spPtr = spPtr;
+    }
+
+    public drawRegisters() {
+        const registers = new Uint8Array(this.memory.buffer, this.registersPtr, 16);
+        let disp = '';
+        for (let idx = 0; idx < 16; idx++) {
+            disp += `<div>V${idx.toString(16)}: 0x${registers[idx].toString(16)}</div>`;
+        }
+
+        document.getElementById('registers').innerHTML = disp;
+    }
+}
+
+export class Display {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
 
     memory: WasmMemory;
     displayPtr: number;
+    registerPtr: number;
 
     width: number;
     height: number;
@@ -46,7 +91,7 @@ export default class Display {
         for (let row = 0; row < this.height; row++) {
             for (let col = 0; col < this.width; col++) {
                 const idx = this.getIndex(row, col);
-                this.ctx.fillStyle = pixels[idx] ? ON_COLOR : OFF_COLOR;
+                this.ctx.fillStyle = pixels[idx] === 1 ? ON_COLOR : OFF_COLOR;
                 this.ctx.fillRect(
                     col * (CELL_SIZE + 1) + 1,
                     row * (CELL_SIZE + 1) + 1,
