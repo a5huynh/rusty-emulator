@@ -10,6 +10,19 @@ use rand::{ thread_rng, Rng };
 use wasm_bindgen::prelude::*;
 use utils;
 
+mod font;
+use self::font::{ FONT };
+
+#[wasm_bindgen]
+extern {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(msg: &str);
+}
+
+macro_rules! log {
+    ($($t:tt)*) => (log(&format!($($t)*)))
+}
+
 // Various dimensions used in this emulator implementation.
 const NUM_REGISTERS: usize = 18;
 const MEM_SIZE: usize = 4000;
@@ -73,8 +86,8 @@ pub struct CHIP8 {
 impl CHIP8 {
     pub fn new() -> CHIP8 {
         utils::set_panic_hook();
-
-        CHIP8 {
+        // Initialize emulator
+        let mut chip8 = CHIP8 {
             i_reg: 0,
             pc: 0x200,
             sp: 0,
@@ -82,7 +95,17 @@ impl CHIP8 {
             memory: [0; MEM_SIZE],
             stack: [0; STACK_SIZE],
             display: [0; DISPLAY_HEIGHT * DISPLAY_WIDTH],
+        };
+        // Load fonts into memory.
+        let mut idx = 0;
+        for sprite in FONT.iter() {
+            for &byte in sprite.iter() {
+                chip8.memory[idx] = byte;
+                idx += 1;
+            }
         }
+
+        chip8
     }
 
     // Handy access to emu constants
@@ -99,7 +122,8 @@ impl CHIP8 {
         let opcode = u16::from(self.memory[self.pc as usize]) << 8 | u16::from(self.memory[(self.pc + 1) as usize]);
         // Increment program counter
         self.pc += 2;
-        return opcode;
+
+        opcode
     }
 
     // Executes an opcode.
@@ -277,6 +301,59 @@ impl CHIP8 {
                     py += 1;
                 }
             },
+            // Ex9E - SKP Vx
+            // Skip next instruction if key with the value of Vx is pressed.
+            //
+            // Checks the keyboard, and if the key corresponding to the value of Vx
+            // is currently in the down position, PC is increased by 2.
+            0xE000 => {
+                match lower {
+                    0x9E => {},
+                    0xA1 => {},
+                    _ => println!("Unknown opcode {:#X}", opcode)
+                }
+            },
+            0xF000 => {
+                match lower {
+                    // LD vx, DT
+                    0x07 => self.registers[vx] = self.registers[Register::DT as usize],
+                    // LD vx, k
+                    // NOTE: This blocks all execution until a key press. This is
+                    // simulated by not advancing the PC forward until the key
+                    // press is detected.
+                    0x0A => {
+                        self.registers[vx] = 0;
+                        self.pc -= 2;
+                    },
+                    // LD dt, vx
+                    0x15 => self.registers[Register::DT as usize] = self.registers[vx],
+                    // LD st, vx
+                    0x18 => self.registers[Register::ST as usize] = self.registers[vx],
+                    // ADD I, vx
+                    0x1E => self.i_reg += u16::from(self.registers[vx]),
+                    // LD f, vx
+                    // The value of I is set to the location for the hexadecimal
+                    // sprite corresponding to the value of vx.
+                    0x29 => self.i_reg = 0,
+                    // LD b, vx
+                    // Store the BCD representation of vx in memory locations I, I+1, I+2
+                    0x33 => self.i_reg = 0,
+                    // LD [I], vx
+                    // Copies the value of registers v0 through vx into memory.
+                    0x55 => {
+                        for idx in 0..vx {
+                            self.memory[self.i_reg as usize + idx] = self.registers[idx];
+                        }
+                    },
+                    // LD vx, [i]
+                    0x65 => {
+                        for idx in 0..vx {
+                            self.registers[idx] = self.memory[self.i_reg as usize + idx];
+                        }
+                    },
+                    _ => println!("Unknown opcode {:#X}", opcode)
+                }
+            },
             _ => println!("Unknown opcode {:#X}", opcode)
         }
     }
@@ -316,13 +393,18 @@ impl CHIP8 {
                 start += 1;
             }
         }
-        return start;
+
+        log!("Loaded new rom, {} bytes", start);
+        start
     }
 
     pub fn tick(&mut self) {
         // Fetch opcode
         let opcode = self.fetch();
         // Execute opcode
+        if opcode != 0 {
+            log!("Executing opcode: {:#X}", opcode);
+        }
         self.execute(opcode);
     }
 }
