@@ -289,12 +289,12 @@ impl CHIP8 {
 
                         // Set VF register if we erase a pixel.
                         if self.registers[Register::VF as usize] == 0
-                            && value == 0
+                            && value == 1
                             && self.display[display_idx] == 1 {
                             self.registers[Register::VF as usize] = 1;
                         }
 
-                        self.display[display_idx] = value;
+                        self.display[display_idx] ^= value;
                         px += 1;
                     }
                     px = self.registers[vx] as usize;
@@ -644,8 +644,8 @@ mod tests {
             assert_eq!(emu.display[idx], 1);
         }
         // Writing to the same location on the display again with an
-        // empty sprite should set the VF register.
-        emu.memory[0] = 0;
+        // the same sprite should set the VF register and erase the sprite.
+        emu.memory[0] = 0xFF;
         emu.execute(0xD001);
         assert_eq!(emu.registers[Register::VF as usize], 1);
         // Check that the sprite was written to the display memory
@@ -661,8 +661,11 @@ mod tests {
         emu.execute(0xD011);
         // Should start on the far right and then wrap over to the left again.
         assert_eq!(emu.display[DISPLAY_WIDTH - 1], 1);
+        emu.display[DISPLAY_WIDTH - 1] = 0;
         for idx in 0..7 {
             assert_eq!(emu.display[idx], 1);
+            // Set back to zero for next test
+            emu.display[idx] = 0;
         }
 
         emu.registers[0] = (DISPLAY_WIDTH - 1) as u8;
