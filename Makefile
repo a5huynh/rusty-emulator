@@ -8,6 +8,9 @@ all:
 build:
 	# Build the project & creating wasm bindings
 	wasm-pack build
+	# Create links
+	cd pkg && npm link
+	cd www && npm link z80-emulator
 
 test:
 	cargo test
