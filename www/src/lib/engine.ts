@@ -7,6 +7,10 @@ export interface WasmMemory {
     buffer: ArrayBuffer;
 }
 
+// Test rom base64 encoded.
+// Maze test
+const TEST_ROM = 'YABhAKIiwgEyAaIe0BRwBDBAEgRgAHEEMSASBBIcgEAgECBAgBA=';
+
 export default class Engine {
     public animationId: number = null;
 
@@ -41,9 +45,21 @@ export default class Engine {
             this.engine.sp()
         );
 
+        this.engine.load_rom(this._Base64toBytes(TEST_ROM));
+
         this.isPaused = this.isPaused.bind(this);
         this.render = this.render.bind(this);
         this.tick = this.tick.bind(this);
+    }
+
+    private _Base64toBytes(data: string) {
+        let decoded = atob(TEST_ROM);
+        let array = new Uint8Array(decoded.length);
+        for (let i = 0; i < decoded.length; i++) {
+            array[i] = decoded.charCodeAt(i);
+        }
+
+        return array;
     }
 
     public isPaused() {
