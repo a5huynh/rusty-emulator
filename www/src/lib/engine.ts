@@ -1,13 +1,14 @@
-import { CHIP8, Register } from "z80-emulator";
-import { Display, MemoryDisplay } from "./ui/display";
-import { TextEncoder } from 'text-encoding';
+import { CHIP8 } from 'z80-emulator';
+
+import { Display } from './ui/display';
+import { MemoryDisplay } from './ui/memory';
 
 export interface WasmMemory {
     buffer: ArrayBuffer;
 }
 
 export default class Engine {
-    public animationId: number;
+    public animationId: number = null;
 
     engine: CHIP8 = CHIP8.new();
     memory: WasmMemory;
@@ -52,12 +53,14 @@ export default class Engine {
     public tick() {
         this.render();
         this.engine.tick();
-        this.animationId = requestAnimationFrame(this.render);
+        this.animationId = requestAnimationFrame(this.tick);
     }
 
     public render() {
         this.display.drawGrid();
         this.display.drawPixels();
+
         this.memDisplay.drawRegisters();
+        this.memDisplay.drawMemory(this.isPaused());
     }
 }

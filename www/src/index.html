@@ -19,6 +19,14 @@
       code { font-size: 10px; }
       table td { padding: 0 16px; }
 
+      #memory {
+        height: 512px;
+        overflow-y: scroll;
+      }
+
+      #memory div > span {
+        margin-right: 4px;
+      }
     </style>
   </head>
   <body>
@@ -31,7 +39,7 @@
       <tr>
         <td colspan="3" style="text-align: center;">
           <hr>
-          <code id="memory">Memory only shown on pause.</code>
+          <div id="memory"></div>
         </td>
       </tr>
     </table>

@@ -6,10 +6,11 @@ import Engine from './lib/engine';
 
 let engine = new Engine(memory);
 const playPauseButton = document.getElementById('play-pause');
+playPauseButton.textContent = '▶';
 
 const play = () => {
   playPauseButton.textContent = "⏸";
-  engine.render();
+  engine.tick();
 };
 
 const pause = () => {
@@ -25,6 +26,7 @@ playPauseButton.addEventListener('click', event => {
   } else {
     console.log('Pausing engine');
     pause();
+    engine.render();
   }
 });
 
