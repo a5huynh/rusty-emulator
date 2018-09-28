@@ -394,7 +394,9 @@ impl CHIP8 {
             }
         }
 
+        #[cfg(target_arch = "wasm32")]
         log!("Loaded new rom, {} bytes", start);
+
         start
     }
 
