@@ -44,10 +44,25 @@ export class Display {
     public drawPixels() {
         this.ctx.beginPath();
 
+        this.ctx.fillStyle = ON_COLOR;
         for (let row = 0; row < this.height; row++) {
             for (let col = 0; col < this.width; col++) {
                 const idx = this.getIndex(row, col);
-                this.ctx.fillStyle = this.pixels[idx] === 1 ? ON_COLOR : OFF_COLOR;
+                if (this.pixels[idx] === 0) { continue; }
+                this.ctx.fillRect(
+                    col * (CELL_SIZE + 1) + 1,
+                    row * (CELL_SIZE + 1) + 1,
+                    CELL_SIZE,
+                    CELL_SIZE
+                );
+            }
+        }
+
+        this.ctx.fillStyle = OFF_COLOR;
+        for (let row = 0; row < this.height; row++) {
+            for (let col = 0; col < this.width; col++) {
+                const idx = this.getIndex(row, col);
+                if (this.pixels[idx] === 1) { continue; }
                 this.ctx.fillRect(
                     col * (CELL_SIZE + 1) + 1,
                     row * (CELL_SIZE + 1) + 1,

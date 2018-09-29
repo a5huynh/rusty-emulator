@@ -1,11 +1,8 @@
 {
   "name": "z80-emulator-app",
   "version": "0.1.0",
-  "description": "create an app to consume rust-generated wasm packages",
+  "description": "rust & webassembly emulator",
   "main": "index.js",
-  "bin": {
-    "create-wasm-app": ".bin/create-wasm-app.js"
-  },
   "scripts": {
     "build": "webpack --config webpack.config.js --mode development",
     "start": "webpack-dev-server --mode development"

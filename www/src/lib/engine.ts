@@ -1,6 +1,7 @@
 import { CHIP8 } from 'z80-emulator';
 
 import { Display } from './ui/display';
+import { FPS } from './ui/fps';
 import { MemoryDisplay } from './ui/memory';
 
 export interface WasmMemory {
@@ -20,6 +21,7 @@ export default class Engine {
     width: number = CHIP8.display_width();
     height: number = CHIP8.display_height();
 
+    fps: FPS;
     display: Display;
     memDisplay: MemoryDisplay;
 
@@ -44,12 +46,15 @@ export default class Engine {
             this.engine.pc(),
             this.engine.sp()
         );
+        this.fps = new FPS();
 
         this.engine.load_rom(this._Base64toBytes(TEST_ROM));
 
         this.isPaused = this.isPaused.bind(this);
         this.render = this.render.bind(this);
         this.tick = this.tick.bind(this);
+
+        this.display.drawGrid();
     }
 
     private _Base64toBytes(data: string) {
@@ -67,13 +72,14 @@ export default class Engine {
     }
 
     public tick() {
+        this.fps.render();
+
         this.render();
         this.engine.tick();
         this.animationId = requestAnimationFrame(this.tick);
     }
 
     public render() {
-        this.display.drawGrid();
         this.display.drawPixels();
 
         this.memDisplay.drawRegisters();
