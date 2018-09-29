@@ -404,9 +404,6 @@ impl CHIP8 {
         // Fetch opcode
         let opcode = self.fetch();
         // Execute opcode
-        if opcode != 0 {
-            log!("Executing opcode: {:#X}", opcode);
-        }
         self.execute(opcode);
     }
 }
