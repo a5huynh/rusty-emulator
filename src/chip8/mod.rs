@@ -25,7 +25,7 @@ macro_rules! log {
 
 // Various dimensions used in this emulator implementation.
 const NUM_REGISTERS: usize = 18;
-const MEM_SIZE: usize = 4000;
+const MEM_SIZE: usize = 4096;
 const STACK_SIZE: usize = 16;
 const DISPLAY_WIDTH: usize = 64;
 const DISPLAY_HEIGHT: usize = 32;
