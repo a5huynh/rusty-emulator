@@ -42,6 +42,15 @@ fn random_byte() -> u8 {
     (rng.gen::<f32>() * 255.0) as u8
 }
 
+// Mapping of CHIP8 keys
+#[wasm_bindgen]
+#[repr(u8)]
+#[derive(Clone, Copy, PartialEq)]
+pub enum Key {
+    K1, K2, K3, K4, K5, K6, K7, K8, K9, K0,
+    KA, KB, KC, KD, KE, KF
+}
+
 // Mapping of register names to the register bank
 #[wasm_bindgen]
 #[repr(u8)]
@@ -80,6 +89,10 @@ pub struct CHIP8 {
     stack: [u16; STACK_SIZE],
     // Display
     display: [u8; DISPLAY_HEIGHT * DISPLAY_WIDTH],
+    // Current key press
+    current_key: Option<Key>,
+    // Whether key[x] is pressed or not.
+    keys: [bool; 16],
 }
 
 #[wasm_bindgen]
@@ -95,6 +108,8 @@ impl CHIP8 {
             memory: [0; MEM_SIZE],
             stack: [0; STACK_SIZE],
             display: [0; DISPLAY_HEIGHT * DISPLAY_WIDTH],
+            current_key: None,
+            keys: [false; 16]
         };
         // Load fonts into memory.
         let mut idx = 0;
@@ -304,16 +319,32 @@ impl CHIP8 {
                     py += 1;
                 }
             },
-            // Ex9E - SKP Vx
-            // Skip next instruction if key with the value of Vx is pressed.
-            //
-            // Checks the keyboard, and if the key corresponding to the value of Vx
-            // is currently in the down position, PC is increased by 2.
             0xE000 => {
                 match lower {
-                    0x9E => {},
-                    0xA1 => {},
-                    _ => println!("Unknown opcode {:#X}", opcode)
+                    // SKP Vx
+                    // Skip next instruction if key with the value of Vx is pressed.
+                    //
+                    // Checks the keyboard, and if the key corresponding to the value of Vx
+                    // is currently in the down position, PC is increased by 2.
+                    0x9E => {
+                        let key = self.registers[vx as usize];
+                        if self.keys[key as usize] {
+                            self.pc += 2;
+                        }
+                    },
+                    // SKNP Vx
+                    // Skip next instruction if key with the value of Vx is not pressed.
+                    //
+                    // Checks the keyboard, and if the key corresponding to
+                    // the value of Vx is currently in the up position, PC
+                    // is increased by 2.
+                    0xA1 => {
+                        let key = self.registers[vx as usize];
+                        if !self.keys[key as usize] {
+                            self.pc += 2;
+                        }
+                    },
+                    _ => log!("Unknown opcode {:#X}", opcode)
                 }
             },
             0xF000 => {
@@ -321,12 +352,16 @@ impl CHIP8 {
                     // LD vx, DT
                     0x07 => self.registers[vx] = self.registers[Register::DT as usize],
                     // LD vx, k
-                    // NOTE: This blocks all execution until a key press. This is
-                    // simulated by not advancing the PC forward until the key
-                    // press is detected.
                     0x0A => {
-                        self.registers[vx] = 0;
-                        self.pc -= 2;
+                        match self.current_key {
+                            Some(key) => {
+                                self.registers[vx] = key as u8;
+                            },
+                            // NOTE: This blocks all execution until a key press. This is
+                            // simulated by not advancing the PC forward until the key
+                            // press is detected.
+                            None => self.pc -= 2,
+                        }
                     },
                     // LD dt, vx
                     0x15 => self.registers[Register::DT as usize] = self.registers[vx],
@@ -391,6 +426,23 @@ impl CHIP8 {
     // Utility functions to get program counter & stack pointer.
     pub fn pc(&self) -> u16 { self.pc }
     pub fn sp(&self) -> u8 { self.sp }
+
+    pub fn key_press(&mut self, key: Key) {
+        self.current_key = Some(key);
+        self.keys[key as usize] = true;
+    }
+
+    pub fn key_up(&mut self, key: Key) {
+        // Clear current key selection if they match.
+        if let Some(current_key) = self.current_key {
+            if key == current_key {
+                self.current_key = None;
+            }
+        }
+
+        // Set to false
+        self.keys[key as usize] = false;
+    }
 
     // Loads a rom (an array of bytes) in the CHIP8 memory and sets the
     // program counter to the beginning.
@@ -700,5 +752,15 @@ mod tests {
         for idx in 0..3 {
             assert_eq!(emu.memory[idx], (idx + 1) as u8);
         }
+
+        // Simulate key press
+        let old_pc = emu.pc;
+        emu.execute(0xF00A);
+        // PC should be decremented by 2 to simulate waiting for
+        // key press.
+        assert_eq!(old_pc - 2, emu.pc);
+        emu.current_key = Some(Key::KA);
+        emu.execute(0xF00A);
+        assert_eq!(emu.registers[0], 0x0A);
     }
 }
