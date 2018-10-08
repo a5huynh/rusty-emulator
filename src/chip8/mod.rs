@@ -119,7 +119,8 @@ impl CHIP8 {
     // All instrs are 2 bytes long and are stored most-sig byte first.
     fn fetch(&mut self) -> u16 {
         // Shift first byte to upper 8 bits and OR second byte into lower 8 bits
-        let opcode = u16::from(self.memory[self.pc as usize]) << 8 | u16::from(self.memory[(self.pc + 1) as usize]);
+        let pc = self.pc as usize;
+        let opcode = u16::from(self.memory[pc]) << 8 | u16::from(self.memory[pc + 1]);
         // Increment program counter
         self.pc += 2;
 
@@ -294,6 +295,8 @@ impl CHIP8 {
                             self.registers[Register::VF as usize] = 1;
                         }
 
+                        // Remember that you need to XOR the value instead of
+                        // just setting the display at this index.
                         self.display[display_idx] ^= value;
                         px += 1;
                     }
@@ -334,10 +337,17 @@ impl CHIP8 {
                     // LD f, vx
                     // The value of I is set to the location for the hexadecimal
                     // sprite corresponding to the value of vx.
-                    0x29 => self.i_reg = 0,
+                    // Index via simple multiply since each sprite is 5 bytes long.
+                    0x29 => self.i_reg = (vx * 5) as u16,
                     // LD b, vx
                     // Store the BCD representation of vx in memory locations I, I+1, I+2
-                    0x33 => self.i_reg = 0,
+                    0x33 => {
+                        let mut num = self.registers[vx];
+                        for idx in (0..3).rev() {
+                            self.memory[(self.i_reg + idx) as usize] = (num % 10) as u8;
+                            num = num / 10;
+                        }
+                    },
                     // LD [I], vx
                     // Copies the value of registers v0 through vx into memory.
                     0x55 => {
@@ -677,6 +687,18 @@ mod tests {
         for idx in 0..7 {
             assert_eq!(emu.display[idx], 1);
             assert_eq!(emu.display[(DISPLAY_HEIGHT - 1) * DISPLAY_WIDTH + idx], 1);
+        }
+    }
+
+    #[test]
+    fn test_execute_0xf000() {
+        let mut emu = CHIP8::new();
+        emu.registers[0] = 123;
+        emu.execute(0xF033);
+        // Should have the digits, 1, 2 & 3 in each individual memory
+        // location
+        for idx in 0..3 {
+            assert_eq!(emu.memory[idx], (idx + 1) as u8);
         }
     }
 }
