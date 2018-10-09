@@ -1,4 +1,4 @@
-import { CHIP8 } from 'z80-emulator';
+import { CHIP8, Key } from 'z80-emulator';
 
 import { Display } from './ui/display';
 import { FPS } from './ui/fps';
@@ -7,6 +7,26 @@ import { MemoryDisplay } from './ui/memory';
 export interface WasmMemory {
     buffer: ArrayBuffer;
 }
+
+// Maps keycode -> CHIP-8 key.
+const KEY_MAP: { [key: number]: Key } = {
+    49: 0x1,  // 1
+    50: 0x2,  // 2
+    51: 0x3,  // 3
+    52: 0xC,  // 4
+    81: 0x4,  // Q
+    87: 0x5,  // W
+    69: 0x6,  // E
+    82: 0xD,  // R
+    65: 0x7,  // A
+    83: 0x8,  // S
+    68: 0x9,  // D
+    70: 0xE,  // F
+    90: 0xA,  // Z
+    88: 0x0,  // X
+    67: 0xB,  // C
+    86: 0xF   // V
+};
 
 // Test rom base64 encoded.
 // Maze test
@@ -50,10 +70,14 @@ export default class Engine {
 
         this.engine.load_rom(this._Base64toBytes(TEST_ROM));
 
+        this.handleKeyPress = this.handleKeyPress.bind(this);
+        this.handleKeyUp = this.handleKeyUp.bind(this);
         this.isPaused = this.isPaused.bind(this);
         this.render = this.render.bind(this);
         this.tick = this.tick.bind(this);
 
+        window.addEventListener('keydown', this.handleKeyPress);
+        window.addEventListener('keyup', this.handleKeyUp);
         this.display.drawGrid();
     }
 
@@ -65,6 +89,18 @@ export default class Engine {
         }
 
         return array;
+    }
+
+    public handleKeyPress(ev: KeyboardEvent) {
+        if (ev.keyCode in KEY_MAP) {
+            this.engine.key_press(KEY_MAP[ev.keyCode]);
+        }
+    }
+
+    public handleKeyUp(ev: KeyboardEvent) {
+        if (ev.keyCode in KEY_MAP) {
+            this.engine.key_up(KEY_MAP[ev.keyCode]);
+        }
     }
 
     public isPaused() {
