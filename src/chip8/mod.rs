@@ -19,10 +19,15 @@ extern {
     fn log(msg: &str);
 }
 
+#[cfg(target_arch = "wasm32")]
 macro_rules! log {
     ($($t:tt)*) => (log(&format!($($t)*)))
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+macro_rules! log {
+    ($($t:tt)*) => (println!($($t)*))
+}
 // Various dimensions used in this emulator implementation.
 const NUM_REGISTERS: usize = 18;
 const MEM_SIZE: usize = 4096;
@@ -169,7 +174,7 @@ impl CHIP8 {
                         // Subtract 1 from the stack pointer.
                         self.sp -= 1;
                     },
-                    _ => println!("Unknown opcode {:#X}", opcode)
+                    _ => log!("Unknown opcode {:#X}", opcode)
                 }
             },
             // JP <addr>: Jump to <addr>
@@ -250,7 +255,7 @@ impl CHIP8 {
                         self.registers[Register::VF as usize] = msb;
                         self.registers[vx] <<= 1;
                     },
-                    _ => println!("Unknown opcode {:#X}", opcode),
+                    _ => log!("Unknown opcode {:#X}", opcode),
                 }
             },
             // SNE vx, vy
@@ -396,10 +401,10 @@ impl CHIP8 {
                             self.registers[idx] = self.memory[self.i_reg as usize + idx];
                         }
                     },
-                    _ => println!("Unknown opcode {:#X}", opcode)
+                    _ => log!("Unknown opcode {:#X}", opcode)
                 }
             },
-            _ => println!("Unknown opcode {:#X}", opcode)
+            _ => log!("Unknown opcode {:#X}", opcode)
         }
     }
 
