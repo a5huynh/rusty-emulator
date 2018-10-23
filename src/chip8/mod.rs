@@ -4,9 +4,12 @@
 // have some interesting/neat implementation details.
 //
 // Check out the `research` section of the README to learn more.
+#[cfg(target_arch = "wasm32")]
 use js_sys::{ Math };
-use std::fmt;
+#[cfg(not(target_arch = "wasm32"))]
 use rand::{ thread_rng, Rng };
+
+use std::fmt;
 use wasm_bindgen::prelude::*;
 use utils;
 
