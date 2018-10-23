@@ -78,7 +78,6 @@ export default class Engine {
 
         window.addEventListener('keydown', this.handleKeyPress);
         window.addEventListener('keyup', this.handleKeyUp);
-        this.display.drawGrid();
     }
 
     private _Base64toBytes(data: string) {
