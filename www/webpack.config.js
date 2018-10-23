@@ -43,7 +43,12 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(['dist']),
-    new CopyWebpackPlugin(['src/index.html']),
+    new CopyWebpackPlugin([
+      // main html page
+      'src/index.html',
+      // roms to load
+      { from: '../roms/chip8/*.ch8', to: 'roms' }
+    ]),
     new Webpack.HotModuleReplacementPlugin(),
   ],
 };

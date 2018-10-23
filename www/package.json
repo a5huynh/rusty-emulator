@@ -23,7 +23,7 @@
   "devDependencies": {
     "awesome-typescript-loader": "^5.2.1",
     "clean-webpack-plugin": "^0.1.19",
-    "copy-webpack-plugin": "^4.5.2",
+    "copy-webpack-plugin": "^4.5.4",
     "css-loader": "^1.0.0",
     "file-loader": "^2.0.0",
     "hello-wasm-pack": "^0.1.0",

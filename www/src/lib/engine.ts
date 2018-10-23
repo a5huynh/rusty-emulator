@@ -29,10 +29,6 @@ const KEY_MAP: { [key: number]: Key } = {
     86: 0xF   // V
 };
 
-// Test rom base64 encoded.
-// Maze test
-const TEST_ROM = 'YABhAKIiwgEyAaIe0BRwBDBAEgRgAHEEMSASBBIcgEAgECBAgBA=';
-
 export default class Engine {
     public animationId: number = null;
 
@@ -69,8 +65,6 @@ export default class Engine {
         );
         this.fps = new FPS();
 
-        this.engine.load_rom(this._Base64toBytes(TEST_ROM));
-
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
         this.isPaused = this.isPaused.bind(this);
@@ -82,7 +76,7 @@ export default class Engine {
     }
 
     private _Base64toBytes(data: string) {
-        let decoded = atob(TEST_ROM);
+        let decoded = atob(data);
         let array = new Uint8Array(decoded.length);
         for (let i = 0; i < decoded.length; i++) {
             array[i] = decoded.charCodeAt(i);
