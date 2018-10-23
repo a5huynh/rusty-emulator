@@ -104,6 +104,12 @@ pub struct CHIP8 {
     keys: [bool; 16],
 }
 
+impl Default for CHIP8 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[wasm_bindgen]
 impl CHIP8 {
     pub fn new() -> CHIP8 {
@@ -524,7 +530,7 @@ impl fmt::Display for CHIP8 {
                 write!(f, "{}", symbol)?
             }
 
-            write!(f, "\n")?;
+            writeln!(f)?;
         }
 
         Ok(())
