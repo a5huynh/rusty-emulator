@@ -8,6 +8,7 @@ export interface WasmMemory {
     buffer: ArrayBuffer;
 }
 
+const SPEED_UP = 4;
 // Maps keycode -> CHIP-8 key.
 const KEY_MAP: { [key: number]: Key } = {
     49: 0x1,  // 1
@@ -110,7 +111,9 @@ export default class Engine {
         this.fps.render();
 
         this.render();
-        this.engine.tick();
+        for (let i = 0; i < SPEED_UP; i++) {
+            this.engine.tick();
+        }
         this.animationId = requestAnimationFrame(this.tick);
     }
 
