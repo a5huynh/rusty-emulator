@@ -13,6 +13,13 @@ use utils;
 mod font;
 use self::font::{ FONT };
 
+// Various dimensions used in this emulator implementation.
+const NUM_REGISTERS: usize = 18;
+const MEM_SIZE: usize = 4096;
+const STACK_SIZE: usize = 16;
+const DISPLAY_WIDTH: usize = 64;
+const DISPLAY_HEIGHT: usize = 32;
+
 #[wasm_bindgen]
 extern {
     #[wasm_bindgen(js_namespace = console)]
@@ -28,12 +35,6 @@ macro_rules! log {
 macro_rules! log {
     ($($t:tt)*) => (println!($($t)*))
 }
-// Various dimensions used in this emulator implementation.
-const NUM_REGISTERS: usize = 18;
-const MEM_SIZE: usize = 4096;
-const STACK_SIZE: usize = 16;
-const DISPLAY_WIDTH: usize = 64;
-const DISPLAY_HEIGHT: usize = 32;
 
 #[cfg(target_arch = "wasm32")]
 fn random_byte() -> u8 {
@@ -468,6 +469,15 @@ impl CHIP8 {
     }
 
     pub fn tick(&mut self) {
+        // Handle delay & sound timers
+        if self.registers[Register::DT as usize] > 0 {
+            self.registers[Register::DT as usize] -= 1;
+        }
+
+        if self.registers[Register::ST as usize] > 0 {
+            self.registers[Register::ST as usize] -= 1;
+        }
+
         // Fetch opcode
         let opcode = self.fetch();
         // Execute opcode
