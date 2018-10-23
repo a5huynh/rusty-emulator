@@ -453,6 +453,9 @@ impl CHIP8 {
     // Loads a rom (an array of bytes) in the CHIP8 memory and sets the
     // program counter to the beginning.
     pub fn load_rom(&mut self, rom: Option<Box<[u8]>>) -> usize {
+        // Reset memory and display
+        self.reset();
+
         let mut start = 0;
         self.pc = 0x200;
         if let Some(data) = rom {
@@ -466,6 +469,30 @@ impl CHIP8 {
         log!("Loaded new rom, {} bytes", start);
 
         start
+    }
+
+    pub fn reset(&mut self) {
+        // Clear memory
+        for i in 0..MEM_SIZE {
+            self.memory[i] = 0;
+        }
+
+        // Clear stack
+        for i in 0..STACK_SIZE {
+            self.stack[i] = 0;
+        }
+
+        // Clear registers
+        for i in 0..NUM_REGISTERS {
+            self.registers[i] = 0;
+        }
+        self.sp = 0;
+        self.pc = 0;
+
+        // Clear display
+        for i in 0..(DISPLAY_HEIGHT * DISPLAY_WIDTH) {
+            self.display[i] = 0;
+        }
     }
 
     pub fn tick(&mut self) {
