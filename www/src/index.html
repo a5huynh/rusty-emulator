@@ -17,7 +17,18 @@
       }
 
       code { font-size: 10px; }
-      table td { padding: 0 16px; }
+      table td {
+        padding: 0 16px;
+        text-align: center;
+      }
+
+      td.sidebar {
+        width: 100px;
+      }
+
+      canvas {
+        border: 1px solid #EEE;
+      }
 
       #memory {
         height: 512px;
@@ -33,11 +44,11 @@
     <table>
       <tr><td colspan="3" style="text-align: center;"><code id="fps">fps: 0</code></td></tr>
       <tr>
-        <td>
+        <td class="sidebar">
           <div><button id="play-pause"></button></div>
         </td>
         <td><canvas id="engine-display"></canvas></td>
-        <td><code id="registers"></code></td>
+        <td class="sidebar"><code id="registers"></code></td>
       </tr>
       <tr>
         <td colspan="3" style="text-align: center;">
