@@ -17,10 +17,12 @@ code {
 table td {
     padding: 0 16px;
     text-align: center;
-}
 
-td.sidebar {
-    width: 100px;
+    .sidebar { width: 100px; }
+    .topbar {
+        width: 100%;
+        text-align: center;
+    }
 }
 
 canvas {

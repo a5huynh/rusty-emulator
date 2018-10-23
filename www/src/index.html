@@ -6,18 +6,23 @@
   </head>
   <body>
     <table>
-      <tr><td colspan="3" style="text-align: center;"><code id="fps">fps: 0</code></td></tr>
+      <tr>
+          <td class="topbar" colspan="3">
+            <div><select id="rom-list"></select></div>
+            <hr>
+          </td>
+      </tr>
       <tr>
         <td class="sidebar">
-          <div><button id="play-pause"></button></div>
+          <code id="fps">fps: 0</code>
           <p>&nbsp;</p>
-          <div><select id="rom-list"></select></div>
+          <div><button id="play-pause"></button></div>
         </td>
         <td><canvas id="engine-display"></canvas></td>
         <td class="sidebar"><code id="registers"></code></td>
       </tr>
       <tr>
-        <td colspan="3" style="text-align: center;">
+        <td colspan="3">
           <hr>
           <div id="memory"></div>
         </td>
