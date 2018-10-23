@@ -1,4 +1,5 @@
 import { WasmMemory } from '../engine';
+import './display.scss';
 
 const CELL_SIZE = 5; // px
 const OFF_COLOR = '#FFFFFF';
