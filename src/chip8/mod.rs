@@ -296,8 +296,8 @@ impl CHIP8 {
             0xD000 => {
                 self.registers[Register::VF as usize] = 0;
                 // Starting point for the sprite.
-                let mut px = self.registers[vx] as usize;
-                let mut py = self.registers[vy] as usize;
+                let mut px = self.registers[vx];
+                let mut py = self.registers[vy];
                 // Loop each row of the sprite.
                 for idx in 0..subinstr {
                     let byte = self.memory[(self.i_reg + idx) as usize];
@@ -306,17 +306,20 @@ impl CHIP8 {
                         let value = (byte & (0b1000_0000 >> bit_idx)) >> (7 - bit_idx);
                         // Handle horizontal wrapping.
                         let mut wx = px;
-                        if px >= DISPLAY_WIDTH {
-                            wx -= DISPLAY_WIDTH;
+                        if px >= (DISPLAY_WIDTH as u8) {
+                            wx = px % DISPLAY_WIDTH as u8;
                         }
 
                         // Handle vertical wrapping.
                         let mut wy = py;
-                        if py >= DISPLAY_HEIGHT {
-                            wy -= DISPLAY_HEIGHT;
+                        if py >= (DISPLAY_HEIGHT as u8) {
+                            wy = py % DISPLAY_HEIGHT as u8;
                         }
 
-                        let display_idx = wy * DISPLAY_WIDTH + wx;
+                        let display_idx = (wy as usize) * DISPLAY_WIDTH + (wx as usize);
+                        if display_idx > (DISPLAY_HEIGHT * DISPLAY_WIDTH) {
+                            log!("wx: {}, wy: {}, px: {}, py: {}", wx, wy, px, py);
+                        }
 
                         // Set VF register if we erase a pixel.
                         if self.registers[Register::VF as usize] == 0
@@ -330,7 +333,7 @@ impl CHIP8 {
                         self.display[display_idx] ^= value;
                         px += 1;
                     }
-                    px = self.registers[vx] as usize;
+                    px = self.registers[vx];
                     py += 1;
                 }
             },
