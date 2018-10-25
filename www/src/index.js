@@ -7,7 +7,13 @@ const ROM_LIST = [
   { path: 'Breakout [Carmelo Cortez, 1979].ch8', name: 'Breakout' },
   { path: 'Brix [Andreas Gustafsson, 1990].ch8', name: 'Brix' },
   { path: 'Chip8 emulator Logo [Garstyciuks].ch8', name: 'Chip8 Logo' },
-  { path: 'Maze [David Winter, 199x].ch8', name: 'Maze' }
+  { path: 'Maze [David Winter, 199x].ch8', name: 'Maze' },
+  { path: 'Particle Demo [zeroZshadow, 2008].ch8', name: 'Particle Demo' },
+  { path: 'Pong (alt).ch8', name: 'Pong' },
+  { path: 'Sierpinski [Sergey Naydenov, 2010].ch8', name: 'Sierpinski' },
+  { path: 'Space Invaders [David Winter].ch8', name: 'Space Invaders' },
+  { path: 'Tetris [Fran Dachille, 1991].ch8', name: 'Tetris' },
+  { path: 'Zero Demo [zeroZshadow, 2007].ch8', name: 'Zero Demo' },
 ];
 
 let engine = new Engine(memory);
