@@ -22,6 +22,7 @@ const MEM_SIZE: usize = 4096;
 const STACK_SIZE: usize = 16;
 const DISPLAY_WIDTH: usize = 64;
 const DISPLAY_HEIGHT: usize = 32;
+const DISPLAY_SIZE: usize = DISPLAY_HEIGHT * DISPLAY_WIDTH;
 
 #[wasm_bindgen]
 extern {
@@ -172,7 +173,7 @@ impl CHIP8 {
                 match lower {
                     // Clear display.
                     0xE0 => {
-                        for idx in 0..MEM_SIZE {
+                        for idx in 0..DISPLAY_SIZE {
                             self.display[idx] = 0;
                         }
                     },
