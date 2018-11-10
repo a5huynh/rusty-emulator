@@ -42,6 +42,8 @@ export default class Engine {
     display: Display;
     memDisplay: MemoryDisplay;
 
+    showMemDisplay: boolean;
+
     constructor(memory: WasmMemory) {
         this.memory = memory;
         this.display = new Display(
@@ -85,6 +87,11 @@ export default class Engine {
         return array;
     }
 
+    private _parseURLParams() {
+        let urlParams = new URLSearchParams(window.location.search);
+        this.showMemDisplay = urlParams.has('memDisplay') ? urlParams.get('memDisplay') === 'true' : false;
+    }
+
     public handleKeyPress(ev: KeyboardEvent) {
         if (ev.keyCode in KEY_MAP) {
             this.engine.key_press(KEY_MAP[ev.keyCode]);
@@ -115,6 +122,8 @@ export default class Engine {
         this.display.drawPixels();
 
         this.memDisplay.drawRegisters();
-        this.memDisplay.drawMemory(this.isPaused());
+        if (this.showMemDisplay) {
+            this.memDisplay.drawMemory(this.isPaused());
+        }
     }
 }
