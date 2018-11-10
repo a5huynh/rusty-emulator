@@ -34,7 +34,6 @@ romList.addEventListener('change', event => {
     })
     .then((buffer) => {
       let array = new Uint8Array(buffer);
-      console.log(array);
       engine.engine.load_rom(array);
     });
 });
