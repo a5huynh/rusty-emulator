@@ -31,11 +31,24 @@ module.exports = {
       // All output '.js' files will have any sourcemaps re-processed
       // by 'source-map-loader'.
       { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
+      {
+        test: /\.scss$/,
+        use: [
+            "style-loader", // creates style nodes from JS strings
+            "css-loader", // translates CSS into CommonJS
+            "sass-loader" // compiles Sass to CSS, using Node Sass by default
+        ]
+      }
     ]
   },
   plugins: [
     new CleanWebpackPlugin(['dist']),
-    new CopyWebpackPlugin(['src/index.html']),
+    new CopyWebpackPlugin([
+      // main html page
+      'src/index.html',
+      // roms to load
+      { from: '../roms/chip8/*.ch8', to: 'roms' }
+    ]),
     new Webpack.HotModuleReplacementPlugin(),
   ],
 };

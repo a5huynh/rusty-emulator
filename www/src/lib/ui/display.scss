@@ -1,0 +1,39 @@
+body {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: top;
+    justify-content: center;
+}
+
+code {
+    font-size: 10px;
+}
+
+table td {
+    padding: 0 16px;
+    text-align: center;
+
+    .sidebar { width: 100px; }
+    .topbar {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+canvas {
+    border: 1px solid #EEE;
+}
+
+#memory {
+    height: 512px;
+    overflow-y: scroll;
+}
+
+#memory div>span {
+    margin-right: 4px;
+}

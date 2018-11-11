@@ -1,13 +1,7 @@
 extern crate cfg_if;
+extern crate js_sys;
+extern crate rand;
 extern crate wasm_bindgen;
 
-use wasm_bindgen::prelude::*;
-
-pub mod gol;
+pub mod chip8;
 mod utils;
-
-#[wasm_bindgen]
-extern {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(msg: &str);
-}

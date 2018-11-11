@@ -22,8 +22,3 @@ cfg_if! {
         static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
     }
 }
-
-#[macro_export]
-macro_rules! log {
-    ($($t:tt)*) => (log(&format!($($t)*)))
-}
