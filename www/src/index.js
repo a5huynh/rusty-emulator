@@ -24,7 +24,7 @@ romList.innerHTML += '<option>Select a ROM</option>';
 ROM_LIST.forEach(rom => romList.innerHTML += `<option value="${rom.path}">${rom.name}</option>`);
 romList.addEventListener('change', event => {
   const rom = event.target.value;
-  return fetch(`/roms/chip8/${rom}`)
+  return fetch(`roms/chip8/${rom}`)
     .then((resp) => {
       if (!resp.ok) {
         throw new Error(resp.statusText);
