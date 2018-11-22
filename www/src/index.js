@@ -14,6 +14,7 @@ const ROM_LIST = [
   { path: 'Space Invaders [David Winter].ch8', name: 'Space Invaders' },
   { path: 'Tetris [Fran Dachille, 1991].ch8', name: 'Tetris' },
   { path: 'Zero Demo [zeroZshadow, 2007].ch8', name: 'Zero Demo' },
+  { path: 'ufo.ch8', name: 'UFO' },
 ];
 
 let engine = new Engine(memory);
