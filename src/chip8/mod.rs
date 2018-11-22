@@ -145,6 +145,10 @@ impl CHIP8 {
     pub fn mem_size() -> usize { MEM_SIZE }
     pub fn num_registers() -> usize { NUM_REGISTERS }
     pub fn stack_size() -> usize { STACK_SIZE }
+    // Whether we need to beep this tick.
+    pub fn has_beep(&self) -> bool {
+        self.registers[Register::ST as usize] > 0
+    }
 
     // Retrieves the current opcode pointed to by the program counter.
     // All instrs are 2 bytes long and are stored most-sig byte first.
