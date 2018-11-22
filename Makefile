@@ -10,7 +10,7 @@ build:
 	wasm-pack build
 	# Create links
 	cd pkg && npm link
-	cd www && npm link z80-emulator
+	cd www && npm link chip8-emulator
 
 test:
 	cargo test
