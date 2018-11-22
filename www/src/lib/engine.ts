@@ -1,4 +1,4 @@
-import { CHIP8, Key } from 'z80-emulator';
+import { CHIP8, Key } from 'chip8-emulator';
 
 import { Display } from './ui/display';
 import { FPS } from './ui/fps';

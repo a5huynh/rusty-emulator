@@ -1,5 +1,5 @@
 {
-  "name": "z80-emulator-app",
+  "name": "chip8-emulator-app",
   "version": "0.1.0",
   "description": "rust & webassembly emulator",
   "main": "index.js",

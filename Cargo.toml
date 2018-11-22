@@ -1,5 +1,5 @@
 [package]
-name = "z80-emulator"
+name = "chip8-emulator"
 version = "0.1.0"
 authors = ["Andrew Huynh <a5thuynh@gmail.com>"]
 

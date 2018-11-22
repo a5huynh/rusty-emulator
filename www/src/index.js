@@ -1,7 +1,7 @@
 // I couldn't quite figure out how to do this import correctly in Typescript,
 // so for now we have a normal javascript bootstrap piece which loads the
 // main application written in Typescript.
-import { memory } from 'z80-emulator/z80_emulator_bg';
+import { memory } from 'chip8-emulator/chip8_emulator_bg';
 import Engine from './lib/engine';
 const ROM_LIST = [
   { path: 'Breakout [Carmelo Cortez, 1979].ch8', name: 'Breakout' },
